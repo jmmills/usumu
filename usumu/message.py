@@ -5,12 +5,11 @@ from .seralizer import DummySerializer
 
 
 class Message:
-    def __init__(self, transaction, logger=DummyLogger(), bus=DummyBus(),
+    def __init__(self, transaction, bus=DummyBus(),
                  serializer=DummySerializer(), ns=None, merge=False):
         self.__transaction = transaction
         self.__serializer = serializer
         self.__bus = bus
-        self.__logger = logger
         self.__merge = merge
         self.__ns = ns
 
@@ -26,10 +25,6 @@ class Message:
     def bus(self):
         return self.__bus
 
-    @property
-    def logger(self):
-        return self.__logger
-    
     @property
     def merge(self):
         return self.__merge
