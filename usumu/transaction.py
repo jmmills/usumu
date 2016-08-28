@@ -12,7 +12,7 @@ class TransactionFactory:
             if not callable(v):
                 raise TypeError('{} not a valid callable for {}'.format(v, k))
 
-        self.on_call = on_start
+        self.on_call = on_call
         self.on_raise = on_raise
         self.on_return = on_return
 
@@ -33,6 +33,7 @@ class Transaction:
         self.__on_call = on_call
         self.__on_raise = on_raise
         self.__on_return = on_return
+        self.__completed = False
         self.__raise = None
         self.__return = None
 
@@ -77,12 +78,28 @@ class Transaction:
         return self.__raise is not None
 
     @property
-    def returend(self):
+    def returned(self):
         return self.__return
 
     @property
     def has_returned(self):
         return self.__return is not None
+
+    @property
+    def completed(self):
+        return self.__completed
+
+    @property
+    def namespace(self):
+        return self.func.__module__
+
+    @property
+    def short_name(self):
+        return self.func.__qualname__
+
+    @property
+    def name(self):
+        return self.namespace + '.' + self.short_name
 
     def __call__(self):
         self.on_call(self.scope, self)
@@ -94,9 +111,11 @@ class Transaction:
         try:
             self.__return = func(*args, **kwargs)
             self.on_return(self.scope, self)
+            self.__completed = True
             return self.__return
         except Exception as exc:
             self.__raise = exc
             self.on_raise(self.scope, self)
+            self.__completed = True
             raise
 
