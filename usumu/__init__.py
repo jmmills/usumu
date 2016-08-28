@@ -3,8 +3,7 @@ from envcfg.smart import usumu as config
 from uuid import uuid4
 
 from .transaction import TransactionFactory
-from .bus.dummy import Dummy
-
+from .message import Message
 
 class Usumu:
     def __init__(self, name, merge=True, log=False, bus='Dummy', msg='Dummy', logger='Dummy'):
@@ -47,15 +46,9 @@ class Usumu:
     def msg(self, value):
         _set_or_load_and_instantiate(self, '_msg', value)
 
-    def log_if_needed(self):
-        if self.log:
-            self.logger(transaction)
-
-
     def on_call(self, transaction):
-        if self.merged:
-            return
-        else:
+        msg = Message(transaction)
+
 
 
     def on_raise(self, transaction):
