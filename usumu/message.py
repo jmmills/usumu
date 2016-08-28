@@ -4,6 +4,19 @@ from .bus.dummy import DummyBus
 from .seralizer import DummySerializer
 
 
+class MessageFactory:
+    def __init__(self, bus='DummyBus', serializer='DummySeralizer', msg_class=Message, ns=None, merge=False):
+        self._bus = bus
+        self._serializer = serializer
+        self._ns = ns
+        self._merge = merge
+        self._msg_class = msg_class
+
+    def new(self, transaction):
+        return self._msg_class(bus=self._bus, seralizer=self._serializer,
+                               ns=self._ns, merge=self._merge, transaction=transaction)
+
+
 class Message:
     def __init__(self, transaction, bus=DummyBus(),
                  serializer=DummySerializer(), ns=None, merge=False):
