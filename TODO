@@ -1,0 +1,15 @@
+* Write proper abstract classes 
+* Write all of the tests
+* Write all of the documentation
+* Add ns and name overwrides to emit
+* Implement default logger class
+* Implement pickle and jsonpickle serializers
+* Implement proper dummy seralizer
+* Implement Rabbit and Redis publishers
+* Add env configuration to everything
+* Write lots of examples
+* Build a project website
+* Setup Tox
+* Setup Coveralls and Travis
+* Clean up git log
+* Deliver preview release to PyPi
