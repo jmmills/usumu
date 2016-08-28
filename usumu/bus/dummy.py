@@ -2,6 +2,6 @@ from . import Bus
 
 
 @Bus.register
-class Dummy(object):
+class DummyBus(object):
     def publish(self, msg):
         pass

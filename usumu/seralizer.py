@@ -1,0 +1,2 @@
+class DummySerializer:
+    pass

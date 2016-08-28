@@ -1,0 +1,2 @@
+class DummyLogger:
+    pass
