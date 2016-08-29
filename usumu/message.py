@@ -1,11 +1,11 @@
 from time import time
-from .logger import DummyLogger
-from .bus.dummy import DummyBus
+
+from .bus import Bus
 from .seralizer import DummySerializer
 
 
 class MessageFactory:
-    def __init__(self, bus='DummyBus', serializer='DummySeralizer', msg_class=Message, ns=None, merge=False):
+    def __init__(self, bus=object(), serializer=object(), msg_class=Message, ns=None, merge=False):
         self._bus = bus
         self._serializer = serializer
         self._ns = ns
@@ -18,8 +18,8 @@ class MessageFactory:
 
 
 class Message:
-    def __init__(self, transaction, bus=DummyBus(),
-                 serializer=DummySerializer(), ns=None, merge=False):
+    def __init__(self, transaction, bus=object(),
+                 serializer=object(), ns=None, merge=False):
         self.__transaction = transaction
         self.__serializer = serializer
         self.__bus = bus
