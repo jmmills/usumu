@@ -1,9 +1,9 @@
 from functools import wraps
 from envcfg.smart import usumu as config
-from uuid import uuid4
 
 from .transaction import TransactionFactory
 from .message import Message
+
 
 class Usumu:
     def __init__(self, name, merge=True, log=False, bus='Dummy', msg='Dummy', logger='Dummy'):
