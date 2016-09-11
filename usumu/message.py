@@ -1,10 +1,8 @@
 from time import time
-
-from .bus import Bus
-from .seralizer import DummySerializer
+from abc import ABCMeta, abstractmethod
 
 
-class MessageFactory:
+class MessageFactory:  # Add instance validation for our delegates
     def __init__(self, bus=object(), serializer=object(), msg_class=Message, ns=None, merge=False):
         self._bus = bus
         self._serializer = serializer
@@ -17,7 +15,7 @@ class MessageFactory:
                                ns=self._ns, merge=self._merge, transaction=transaction)
 
 
-class Message:
+class Message(metaclass=ABCMeta):  # Add instance validation for our delegates
     def __init__(self, transaction, bus=object(),
                  serializer=object(), ns=None, merge=False):
         self.__transaction = transaction
@@ -25,6 +23,7 @@ class Message:
         self.__bus = bus
         self.__merge = merge
         self.__ns = ns
+        self.__payload = {}
 
     @property
     def transaction(self):
@@ -42,39 +41,25 @@ class Message:
     def merge(self):
         return self.__merge
 
-    @property
-    def name(self):
-        if self.__ns:
-            return self.__ns + '.' + self.transaction.short_name
-        else:
-            return self.transaction.name
+    @property.get
+    def payload(self):
+        return self.__payload
 
-    def base_dict(self):
-        return {
-            'name': self.message_name,
-            'ts': time,
-            'completed': self.transaction.completed,
-            'error': False,
-            'input': {
-                'args': self.transaction.args,
-                'kwargs': self.transaction.kwargs
-            }
-        }
+    @property.set
+    def payload(self, payload):
+        assert isinstance(payload, dict)
+        self.__payload = payload
 
-    def exception_dict(self, msg={}):
+    def __dict__(self):  # handle merge or not merged logic
+        self.initialize_payload()
+
         if self.transaction.completed and self.transaction.raised:
-            msg['error'] = True
-            msg['exception'] = None  # Todo setup exception structure
+            self.augment_payload_for_exception()
 
-    def completed_dict(self, msg={}):
         if self.transaction.completed and not self.transaction.raised:
-            msg['output'] = self.transaction.returned
+            self.augment_payload_when_finished()
 
-    def __dict__(self):
-        payload = self.base_dict()
-        self.exception_dict(payload)
-        self.completed_dict(payload)
-        return payload
+        return self.payload
 
     def send(self):
         if self.merge and not self.transaction.completed:
@@ -84,3 +69,43 @@ class Message:
         self.bus.publish(msg)
 
         return msg
+
+    @abstractmethod
+    def initialize_payload(self):
+        pass
+
+    @abstractmethod
+    def augment_payload_for_exception(self, payload={}):
+        pass
+
+    @abstractmethod
+    def augment_payload_when_finished(self, payload={}):
+        pass
+
+
+# we need to implement an abstract base class here?
+class Default(Message):
+
+    @staticmethod
+    def initialize_payload(self):
+        return {
+            'name': self.transaction.name,
+            'ns': self.transaction.ns,
+            'ts': time,
+            'completed': self.transaction.completed,
+            'error': False,
+            'input': {
+                'args': self.transaction.args,
+                'kwargs': self.transaction.kwargs
+            }
+        }
+
+    @staticmethod
+    def augment_payload_for_exception(self):  # Todo finish writing this
+        self.payload['error'] = True
+        self.payload['exception'] = None  # Todo setup exception structure
+
+    @staticmethod
+    def augment_payload_when_finished(self, payload={}):  # Finish writing this
+        self.payload['output'] = self.transaction.returned
+

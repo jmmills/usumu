@@ -1,4 +1,5 @@
 from uuid import uuid4
+from abc import ABCMeta
 
 
 class TransactionFactory:
@@ -22,8 +23,11 @@ class TransactionFactory:
                            func=func, args=args, kwargs=kwargs)
 
 
-class Transaction:
+class Transaction(metaclass=ABCMeta):
+    pass
 
+
+class Default(Transaction):
     def __init__(self, scope, on_call, on_raise, on_return, func, args, kwargs):
         self.__id = uuid4()
         self.__func = func
@@ -33,7 +37,7 @@ class Transaction:
         self.__on_call = on_call
         self.__on_raise = on_raise
         self.__on_return = on_return
-        self.__completed = False
+        self.__finished = False
         self.__raise = None
         self.__return = None
 
@@ -86,22 +90,22 @@ class Transaction:
         return self.__return is not None
 
     @property
-    def completed(self):
-        return self.__completed
+    def finished(self):
+        return self.__finished
 
     @property
-    def namespace(self):
+    def ns(self):
         return self.func.__module__
 
     @property
-    def short_name(self):
+    def name(self):
         return self.func.__qualname__
 
     @property
-    def name(self):
-        return self.namespace + '.' + self.short_name
+    def long_name(self):
+        return self.ns + '.' + self.name
 
-    def __call__(self):
+    def __call__(self):  # TODO: sort out methods vs functions for this
         self.on_call(self.scope, self)
 
         func = self.func
@@ -111,11 +115,11 @@ class Transaction:
         try:
             self.__return = func(*args, **kwargs)
             self.on_return(self.scope, self)
-            self.__completed = True
+            self.__finished = True
             return self.__return
         except Exception as exc:
             self.__raise = exc
             self.on_raise(self.scope, self)
-            self.__completed = True
+            self.__finished = True
             raise
 
